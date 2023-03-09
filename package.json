@@ -1,0 +1,11 @@
+{
+  "name": "pokemon-server",
+  "version": "1.0.0",
+  "description": "Server with pokemon data up to 3rd generation to practice making a backend server with Express.js",
+  "main": "pokemonServer.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
