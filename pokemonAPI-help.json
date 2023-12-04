@@ -1,0 +1,30 @@
+[
+  {
+    "introduction": {
+      "welcome": "Hey! This is a simple pokedex API for learning purposes. This API contains pokedex entries from the first 151 Kanto pokemon.",
+      "details": "Each pokemon entry has the following information: id: Number, name: String, type: String[], description: String.",
+      "help": "For API details GET /help",
+      "pokedex-endpoint":"/pokedex/...",
+      "TODO":{
+        "0": "Add sprites for each pokemon entry."
+      }
+    }
+  },
+  {
+    "help": {
+      "GET":{
+        "info": "You will be able to access all pokemon entries. You can specify the id number or set it to all",
+        "end-point":"/pokedex/:id"
+      },
+      "PUT":{
+        "info": "Not yet implemented."
+      },
+      "POST":{
+        "info": "Not yet implemented."
+      },
+      "DELETE":{
+        "info": "Not yet implemented."
+      }
+    }
+  }
+]
