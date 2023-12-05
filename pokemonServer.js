@@ -2,12 +2,20 @@ const express = require('express');
 const app = express();
 const PORT = 4000;
 
-const data = require('./data.json');
+const info = require ('./pokemonAPI-help.json');
+const pokedexRouter = require('./pokedexRouter');
 
-app.get('/pokemon-api/', (req, res, next) => {
-  res.send(data);
+app.get('/', (req, res, next) => {
+  res.send(info[0]);
 });
+
+app.get('/help', (req, res, next) => {
+  res.send(info[1]);
+});
+
+// Pokedex Routes
+app.use('/pokedex', pokedexRouter);
 
 app.listen(PORT, () => {
   console.log(`Server listening on Port:${PORT}`);
-})
+});
