@@ -904,5 +904,11 @@
     "name": "Mew",
     "type": ["Psychic"],
     "description": "So rare that it is still said to be a mirage by many experts. Only a few people have seen it worldwide."
+  },
+  {
+    "id": 152,
+    "name": "Missigno",
+    "type": ["Test"],
+    "description": "Lorem ipsum ..."
   }
 ]
