@@ -1,9 +1,11 @@
 const express = require('express');
 const pokedexRouter = express.Router();
 
+const { findIndexById, verifyEntry, checkQuery, filterByName, filterByType } = require('./util.js');
+const { ReturnCodes } = require('./returnCodes.js');
+
 const data = require('./pokemonData.json');
 
-const { findIndexById, verifyEntry } = require('./util.js');
 pokedexRouter.param('id', (req, res, next, id) => {
   if (id === 'all') {
     req.index = id;
@@ -21,7 +23,25 @@ pokedexRouter.param('id', (req, res, next, id) => {
 // ==================== GET ==================== 
 pokedexRouter.get('/:id', (req, res, next) => {
   if (req.index === 'all') {
-    res.status(200).send(data);
+    const retCode = checkQuery(req.query);
+
+    switch (retCode) {
+      case ReturnCodes.Q_EMPTY:
+        return res.status(200).send(data);
+
+      case ReturnCodes.Q_INVALID:
+        return res.send('Invalid query parameter.');
+
+      case ReturnCodes.Q_NAME:
+        const entriesByName = filterByName(req.query.name, data);
+        return res.send(entriesByName);
+
+      case ReturnCodes.Q_TYPE:
+        const mode = Number(req.query.strict || 0);
+        const entriesByType = filterByType(req.query.type, data, mode);
+        return res.send(entriesByType);
+    }
+      
   } else {
     res.status(200).send(data[req.index]);
   }
@@ -31,19 +51,25 @@ pokedexRouter.get('/:id', (req, res, next) => {
 pokedexRouter.post('/', (req, res, next) => {
   const entry = req.body.entry;
   const index = findIndexById(Number(entry.id), data);
+
   if (index === -1) {
-    const valid = verifyEntry(entry);
-    switch (valid) {
-      case 0:
+    const retCode = verifyEntry(entry);
+
+    switch (retCode) {
+      case ReturnCodes.SUCCESS:
         data.push(entry);
         return res.status(200).send(entry);
-      case 1:
+
+      case ReturnCodes.GENERAL_FAILURE:
         return res.send('Missing entry properties.');
-      case 10:
+
+      case ReturnCodes.NOT_A_NUMBER:
         return res.send('id property is not a number.');
-      case 11:
+
+      case ReturnCodes.NOT_A_STRING:
         return res.send('name, description or type array elements are not strings.');
-      case 12:
+
+      case ReturnCodes.NOT_AN_ARRAY:
         return res.send('type property is not an array.')
     }
   } else {
@@ -65,5 +91,7 @@ pokedexRouter.delete('/:id', (req, res, next) => {
     res.send({status:'SUCCESS', entry: deletedEntry});
   }
 });
+
+// TODO - ErrorHandler
 
 module.exports = pokedexRouter;
