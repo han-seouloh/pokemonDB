@@ -1,12 +1,14 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const morgan = require('morgan');
 const PORT = 4000;
 
 const info = require ('./pokemonAPI-help.json');
 const pokedexRouter = require('./pokedexRouter');
 
 app.use(bodyParser.json());
+app.use(morgan('dev'));
 
 app.get('/', (req, res, next) => {
   res.send(info[0]);
