@@ -187,6 +187,26 @@ const capitalize = (str) => {
 /*
 ===============================================================
 FUNCTION:
+  checkID(id)
+
+DESCRIPTION:
+  Receives an id and verifies it's not part of the original 151 entries.
+
+RETURNS:
+  ReturnCode (Integer)
+===============================================================
+*/
+const checkID = (id) => {
+  if (id < 152) {
+    return ReturnCodes.INVALID_ID;
+  } else {
+    return ReturnCodes.VALID_ID;
+  }
+}
+
+/*
+===============================================================
+FUNCTION:
   function(arg)
 
 DESCRIPTION:
@@ -205,5 +225,6 @@ module.exports = {
   verifyEntry,
   checkQuery,
   filterByName,
-  filterByType
+  filterByType,
+  checkID
 }
