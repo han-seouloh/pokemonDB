@@ -8,11 +8,15 @@ const ReturnCodes = {
   NOT_A_STRING: 11,
   NOT_AN_ARRAY: 12,
 
-  // REQ. QUERY CODEs
+  // REQ. QUERY CODES
   Q_INVALID: 20,
   Q_EMPTY: 21,
   Q_NAME: 22,
   Q_TYPE: 23,
+
+  //ID CODES
+  INVALID_ID: 30,
+  VALID_ID: 31
 }
 
 module.exports = {
