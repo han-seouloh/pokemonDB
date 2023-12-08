@@ -51,7 +51,7 @@ RETURNS:
 ===============================================================
 */
 const verifyEntry = (entry) => {
-  if (entry.id && entry.name && entry.type && entry.description) {
+  if (entry.id > 0 && entry.name && entry.type && entry.description) {
     if (typeof entry.id === 'number'){
       if (typeof entry.name === 'string'){
         if (typeof entry.description === 'string'){
