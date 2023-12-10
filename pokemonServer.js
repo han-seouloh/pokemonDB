@@ -21,6 +21,11 @@ app.get('/help', (req, res, next) => {
 // Pokedex Routes
 app.use('/pokedex', pokedexRouter);
 
+// Error handler
+app.use((err, req, res, next) => {
+  res.status(err.status).send({ error: err.status, message: err.message});
+});
+
 app.listen(PORT, () => {
   console.log(`Server listening on Port:${PORT}`);
 });
