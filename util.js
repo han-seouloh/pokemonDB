@@ -207,6 +207,26 @@ const checkID = (id) => {
 /*
 ===============================================================
 FUNCTION:
+  createError(status, message)
+
+DESCRIPTION:
+  Accepts a status code and a message and creates an error obj.
+  with said properties.
+
+RETURNS:
+  Error (Object)
+===============================================================
+*/
+const createError = (status, message) => {
+  const err = new Error(message);
+  err.status = status;
+
+  return err;
+}
+
+/*
+===============================================================
+FUNCTION:
   function(arg)
 
 DESCRIPTION:
@@ -220,11 +240,71 @@ const functionName = () => {
   return 0;
 }
 
+/*
+################################ MIDDLEWARE FUNCTIONS ####################################
+*/
+
+/*
+===============================================================
+MIDDLEWARE FUNCTION:
+  validateEntry(req, res, next)
+
+DESCRIPTION:
+  Validates the request body content
+
+RETURNS:
+  next() (Express Function)
+===============================================================
+*/
+const validateEntry = (req, res, next) => {
+  const retCode = verifyEntry(req.body.entry);
+  let err = null;
+
+  switch (retCode) {
+    case ReturnCodes.SUCCESS:
+      return next();
+
+    case ReturnCodes.GENERAL_FAILURE:
+      err = createError(400, 'Missing entry properties or invalid id.');
+      return next(err);
+
+    case ReturnCodes.NOT_A_NUMBER:
+      err = createError(400, 'id property is not a number.');
+      return next(err);
+
+    case ReturnCodes.NOT_A_STRING:
+      err = createError(400, 'name, description or type array elements are not strings.');
+      return next(err);
+
+    case ReturnCodes.NOT_AN_ARRAY:
+      err = createError(400, 'type property is not an array.');
+      return next(err);
+  }
+};
+
+/*
+===============================================================
+MIDDLEWARE FUNCTION:
+  middlewareFunctionName(req, res, next)
+
+DESCRIPTION:
+  Lorem
+
+RETURNS:
+  next() (Express Function)
+===============================================================
+*/
+const middlewareFunctionName = () => {
+  return 0;
+}
+
 module.exports = {
   findIndexById,
   verifyEntry,
   checkQuery,
   filterByName,
   filterByType,
-  checkID
+  checkID,
+  createError,
+  validateEntry
 }
