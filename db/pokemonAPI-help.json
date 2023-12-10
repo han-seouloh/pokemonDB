@@ -6,8 +6,7 @@
       "help": "For API details GET /help",
       "pokedex-endpoint":"/pokedex/...",
       "TODO":{
-        "0": "Add sprites for each pokemon entry.",
-        "1": "Add custom error handlers for each route"
+        "0": "Add sprites for each pokemon entry."
       }
     }
   },
