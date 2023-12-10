@@ -4,7 +4,7 @@ const pokedexRouter = express.Router();
 const { findIndexById, verifyEntry, checkQuery, filterByName, filterByType, checkID } = require('./util.js');
 const { ReturnCodes } = require('./returnCodes.js');
 
-const data = require('./pokemonData.json');
+const data = require('./db/pokemonData.json');
 
 
 // ============= MIDDLEWARE FUNCTIONS =============
