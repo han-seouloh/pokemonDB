@@ -1,7 +1,8 @@
 const ReturnCodes = {
   // GENERAL RETURN CODES
   SUCCESS: 0,
-  GENERAL_FAILURE: 1,
+  ERROR: 1,
+  NOT_FOUND: 2,
 
   // REQ. BODY CODES
   NOT_A_NUMBER: 10,
@@ -14,9 +15,13 @@ const ReturnCodes = {
   Q_NAME: 22,
   Q_TYPE: 23,
 
-  //ID CODES
+  // ID CODES
   INVALID_ID: 30,
-  VALID_ID: 31
+  VALID_ID: 31,
+
+  // AUTHENTICATION CODES
+  INVALID_PASSWORD: 40,
+
 }
 
 module.exports = {

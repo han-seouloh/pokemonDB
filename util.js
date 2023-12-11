@@ -1,4 +1,6 @@
 const { ReturnCodes } = require('./returnCodes');
+const userDB = require('./db/users.json');
+
 const typesList = new Set([
   "Bug",
   "Dark",
@@ -75,7 +77,7 @@ const verifyEntry = (entry) => {
       return ReturnCodes.NOT_A_NUMBER;
     }
   };
-  return ReturnCodes.GENERAL_FAILURE;
+  return ReturnCodes.ERROR;
 }
 
 /*
@@ -139,7 +141,7 @@ const validType = (type) => {
   if (typesList.has(capitalize(type))) {
     return ReturnCodes.SUCCESS;
   }
-  return ReturnCodes.GENERAL_FAILURE;
+  return ReturnCodes.ERROR;
 }
 
 /*
@@ -227,6 +229,43 @@ const createError = (status, message) => {
 /*
 ===============================================================
 FUNCTION:
+  findByUsername(username)
+
+DESCRIPTION:
+  Accepts username to find user.
+
+RETURNS:
+  User (Object)
+===============================================================
+*/
+const authenticateUser = (username, password, callback) => {
+  const user = userDB.find(user => user.username === username);
+  let retCode = ReturnCodes.ERROR;
+  let err = new Error('Unknown error...');
+  err.status = 400;
+
+  if (user) {
+    if (user.password === password) {
+      err = null;
+      retCode = ReturnCodes.SUCCESS;
+    
+    } else {
+      err = null;
+      retCode = ReturnCodes.INVALID_PASSWORD;
+
+    }
+  } else {
+    err = null
+    retCode = ReturnCodes.NOT_FOUND;
+
+  }
+
+  callback(retCode, user, err);
+}
+
+/*
+===============================================================
+FUNCTION:
   function(arg)
 
 DESCRIPTION:
@@ -264,7 +303,7 @@ const validateEntry = (req, res, next) => {
     case ReturnCodes.SUCCESS:
       return next();
 
-    case ReturnCodes.GENERAL_FAILURE:
+    case ReturnCodes.ERROR:
       err = createError(400, 'Missing entry properties or invalid id.');
       return next(err);
 
@@ -306,5 +345,6 @@ module.exports = {
   filterByType,
   checkID,
   createError,
-  validateEntry
+  validateEntry,
+  authenticateUser
 }
