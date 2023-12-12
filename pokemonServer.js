@@ -6,6 +6,16 @@ const PORT = process.env.PORT || 4000;
 const info = require ('./db/pokemonAPI-help.json');
 const pokedexRouter = require('./pokedexRouter');
 
+// Request Body Parser
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+
+// Logger
+const morgan = require('morgan');
+const { authenticateUser, findByUsername, isAuthenticated } = require('./util');
+const { ReturnCodes } = require('./returnCodes');
+app.use(morgan('dev'));
+
 // Authentication
 const session = require('express-session');
 const store = new session.MemoryStore();
@@ -23,8 +33,17 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Serialize and deserialize users to persist session
+passport.serializeUser((user, done) => done(null, user.username));
+passport.deserializeUser((username, done) => {
+  findByUsername(username, (retCode, user, err) => {
+    if(retCode === ReturnCodes.SUCCESS) return done(err, user);
+    return done(err);
+  })
+});
+
 // Set local strategy for authentication
-app.use(new LocalStrategy((username, password, done) => {
+passport.use(new LocalStrategy((username, password, done) => {
   authenticateUser(username, password, (retCode, user, err) => {
     switch (retCode) {      
       case ReturnCodes.NOT_FOUND:
@@ -43,16 +62,7 @@ app.use(new LocalStrategy((username, password, done) => {
   });
 }));
 
-
-// Request Body Parser
-const bodyParser = require('body-parser');
-app.use(bodyParser.json());
-
-// Logger
-const morgan = require('morgan');
-const { authenticateUser } = require('./util');
-const { ReturnCodes } = require('./returnCodes');
-app.use(morgan('dev'));
+app.use(isAuthenticated);
 
 // ==================== GET ====================
 app.get('/', (req, res, next) => {
@@ -63,6 +73,10 @@ app.get('/help', (req, res, next) => {
   res.send(info[1]);
 });
 
+app.get('/login', (req, res, next) => {
+  res.send(info[2]);
+})
+
 // Pokedex Routes
 app.use('/pokedex', pokedexRouter);
 
@@ -70,6 +84,15 @@ app.use('/pokedex', pokedexRouter);
 app.use((err, req, res, next) => {
   res.status(err.status).send({ error: err.status, message: err.message});
 });
+
+// ==================== POST ====================
+app.post(
+  '/login',
+  passport.authenticate('local', {failureRedirect:'/login'}),
+  (req, res) => {
+    res.redirect('/');
+  }
+)
 
 app.listen(PORT, () => {
   console.log(`Server listening on Port:${PORT}`);

@@ -26,5 +26,9 @@
         "info": "Not yet implemented."
       }
     }
+  },
+  {
+    "login": "Input your username and password into request body in JSON format and send POST request to /login",
+    "info": "If authentication fails or user doesn't exist you'll be redirected to /login"
   }
 ]

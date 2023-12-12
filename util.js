@@ -235,7 +235,33 @@ DESCRIPTION:
   Accepts username to find user.
 
 RETURNS:
-  User (Object)
+  Error or User (Object)
+===============================================================
+*/
+const findByUsername = (username, callback) => {
+  const user = userDB.find(user => user.username === username);
+  let retCode = ReturnCodes.NOT_FOUND;
+  let err = new Error(`User with username:${username} does not exist.`);
+  err.status = 404;
+
+  if (user) {
+    retCode = ReturnCodes.SUCCESS;
+    err = null;
+  }
+
+  callback(retCode, user, err);
+}
+
+/*
+===============================================================
+FUNCTION:
+  authenticateUser(username)
+
+DESCRIPTION:
+  Accepts username, password and callback to find user and authenticate.
+
+RETURNS:
+  Error or User (Object)
 ===============================================================
 */
 const authenticateUser = (username, password, callback) => {
@@ -333,6 +359,31 @@ RETURNS:
   next() (Express Function)
 ===============================================================
 */
+const isAuthenticated = (req, res, next) => {
+  const nonSecurePaths = ['/login', '/register'];
+  if (nonSecurePaths.includes(req.path)) {
+    if (req.user) return res.redirect('/');
+    return next();
+  
+  } else {
+    if (req.user) return next();
+    return res.redirect('/login');
+
+  }
+}
+
+/*
+===============================================================
+MIDDLEWARE FUNCTION:
+  middlewareFunctionName(req, res, next)
+
+DESCRIPTION:
+  Lorem
+
+RETURNS:
+  next() (Express Function)
+===============================================================
+*/
 const middlewareFunctionName = () => {
   return 0;
 }
@@ -346,5 +397,7 @@ module.exports = {
   checkID,
   createError,
   validateEntry,
-  authenticateUser
+  authenticateUser,
+  findByUsername,
+  isAuthenticated
 }
