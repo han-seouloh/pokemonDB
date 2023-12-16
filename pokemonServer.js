@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 
 // Logger
 const morgan = require('morgan');
-const { authenticateUser, findByUsername, isAuthenticated } = require('./util');
+const { authenticateUser, findByUsername, isAuthenticated, createUser } = require('./util');
 const { ReturnCodes } = require('./returnCodes');
 app.use(morgan('dev'));
 
@@ -24,7 +24,7 @@ const LocalStrategy = require('passport-local').Strategy;
 
 app.use(session({
   secret: "p0kemon_Rul3z", // This is not meant to be hardcoded!
-  cookie: { maxAge: 300000000, secure: false },
+  cookie: { maxAge: 300000, secure: false },
   saveUninitialized: false,
   resave: false,
   store
@@ -80,12 +80,8 @@ app.get('/login', (req, res, next) => {
 // Pokedex Routes
 app.use('/pokedex', pokedexRouter);
 
-// Error handler
-app.use((err, req, res, next) => {
-  res.status(err.status).send({ error: err.status, message: err.message});
-});
-
 // ==================== POST ====================
+// Login endpoint
 app.post(
   '/login',
   passport.authenticate('local', {failureRedirect:'/login'}),
@@ -93,6 +89,33 @@ app.post(
     res.redirect('/');
   }
 )
+
+// Register endpoint
+app.post("/register", async (req, res, next) => {
+  const { username, password } = req.body;
+  
+  try {
+    const response = await createUser({username, password});
+    res.status(201).send({status: 'SUCCESS', newUser: response});
+
+  } catch (err) {
+    next(err);
+
+  };
+});
+
+// Logout endpoint
+app.get('/logout', (req, res) => {
+  req.logout(err => {
+    if (err) return next(err);
+    res.redirect("/login");
+  });
+})
+
+// Error handler
+app.use((err, req, res, next) => {
+  res.status(err.status).send({ error: err.status, message: err.message});
+});
 
 app.listen(PORT, () => {
   console.log(`Server listening on Port:${PORT}`);

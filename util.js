@@ -292,6 +292,35 @@ const authenticateUser = (username, password, callback) => {
 /*
 ===============================================================
 FUNCTION:
+  createUser(user)
+
+DESCRIPTION:
+  Lorem..
+
+RETURNS:
+  Lorem..
+===============================================================
+*/
+const createUser = (user) => {
+  return new Promise((resolve, reject) => {
+    const exists = userDB.findIndex(entry => entry.username === user.username);
+
+    if (exists === -1) {
+      userDB.push(user);
+      resolve(user);
+
+    } else {
+      const err = new Error('Username already exists.');
+      err.status = 400;
+      reject(err);
+
+    }
+  });
+};
+
+/*
+===============================================================
+FUNCTION:
   function(arg)
 
 DESCRIPTION:
@@ -399,5 +428,6 @@ module.exports = {
   validateEntry,
   authenticateUser,
   findByUsername,
-  isAuthenticated
+  isAuthenticated,
+  createUser
 }
