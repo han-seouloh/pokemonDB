@@ -4,7 +4,10 @@ const PORT = process.env.PORT || 4000;
 
 // Hardcoded database
 const info = require ('./db/pokemonAPI-help.json');
+
+// Router imports
 const pokedexRouter = require('./pokedexRouter');
+const loginRouter = require('./loginRouter');
 
 // Request Body Parser
 const bodyParser = require('body-parser');
@@ -12,7 +15,7 @@ app.use(bodyParser.json());
 
 // Logger
 const morgan = require('morgan');
-const { authenticateUser, findByUsername, isAuthenticated, createUser } = require('./util');
+const { authenticateUser, findByUsername, isAuthenticated } = require('./util');
 const { ReturnCodes } = require('./returnCodes');
 app.use(morgan('dev'));
 
@@ -73,44 +76,11 @@ app.get('/help', (req, res, next) => {
   res.send(info[1]);
 });
 
-app.get('/login', (req, res, next) => {
-  res.send(info[2]);
-})
-
 // Pokedex Routes
 app.use('/pokedex', pokedexRouter);
 
-// ==================== POST ====================
-// Login endpoint
-app.post(
-  '/login',
-  passport.authenticate('local', {failureRedirect:'/login'}),
-  (req, res) => {
-    res.redirect('/');
-  }
-)
-
-// Register endpoint
-app.post("/register", async (req, res, next) => {
-  const { username, password } = req.body;
-  
-  try {
-    const response = await createUser({username, password});
-    res.status(201).send({status: 'SUCCESS', newUser: response});
-
-  } catch (err) {
-    next(err);
-
-  };
-});
-
-// Logout endpoint
-app.get('/logout', (req, res) => {
-  req.logout(err => {
-    if (err) return next(err);
-    res.redirect("/login");
-  });
-})
+// User Login and Registration Routes
+app.use('/', loginRouter);
 
 // Error handler
 app.use((err, req, res, next) => {
