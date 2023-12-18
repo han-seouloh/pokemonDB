@@ -15,15 +15,15 @@ app.use(bodyParser.json());
 
 // Logger
 const morgan = require('morgan');
-const { authenticateUser, findByUsername, isAuthenticated } = require('./util');
-const { ReturnCodes } = require('./returnCodes');
 app.use(morgan('dev'));
 
-// Authentication
+// Utility Imports
+const { isAuthenticated } = require('./util');
+
+
+// Session Configuration
 const session = require('express-session');
 const store = new session.MemoryStore();
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 
 app.use(session({
   secret: "p0kemon_Rul3z", // This is not meant to be hardcoded!
@@ -33,38 +33,14 @@ app.use(session({
   store
 }));
 
+// Passport Configuration
+const passport = require('passport');
+require('./passportConfig');
+
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Serialize and deserialize users to persist session
-passport.serializeUser((user, done) => done(null, user.username));
-passport.deserializeUser((username, done) => {
-  findByUsername(username, (retCode, user, err) => {
-    if(retCode === ReturnCodes.SUCCESS) return done(err, user);
-    return done(err);
-  })
-});
-
-// Set local strategy for authentication
-passport.use(new LocalStrategy(async (username, password, done) => {
-  await authenticateUser(username, password, (retCode, user, err) => {
-    switch (retCode) {      
-      case ReturnCodes.NOT_FOUND:
-        return done(err, false);
-      
-      case ReturnCodes.INVALID_PASSWORD:
-        return done(err, false);
-      
-      case ReturnCodes.SUCCESS:
-        return done(err, user);
-      
-      default:
-        return done(err);
-
-    }
-  });
-}));
-
+// Check if session is authenticated
 app.use(isAuthenticated);
 
 // ==================== GET ====================
@@ -76,12 +52,14 @@ app.get('/help', (req, res, next) => {
   res.send(info[1]);
 });
 
+// ==================== ROUTES ==================
 // Pokedex Routes
 app.use('/pokedex', pokedexRouter);
 
 // User Login and Registration Routes
 app.use('/', loginRouter);
 
+// =================== ERRORS ===================
 // Error handler
 app.use((err, req, res, next) => {
   res.status(err.status || 500).send({ error: err.status, message: err.message});
