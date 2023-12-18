@@ -24,6 +24,7 @@ const session = require('express-session');
 const store = new session.MemoryStore();
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const bcrypt = require('bcrypt');
 
 app.use(session({
   secret: "p0kemon_Rul3z", // This is not meant to be hardcoded!
@@ -46,8 +47,8 @@ passport.deserializeUser((username, done) => {
 });
 
 // Set local strategy for authentication
-passport.use(new LocalStrategy((username, password, done) => {
-  authenticateUser(username, password, (retCode, user, err) => {
+passport.use(new LocalStrategy(async (username, password, done) => {
+  await authenticateUser(username, password, (retCode, user, err) => {
     switch (retCode) {      
       case ReturnCodes.NOT_FOUND:
         return done(err, false);
@@ -84,7 +85,7 @@ app.use('/', loginRouter);
 
 // Error handler
 app.use((err, req, res, next) => {
-  res.status(err.status).send({ error: err.status, message: err.message});
+  res.status(err.status || 500).send({ error: err.status, message: err.message});
 });
 
 app.listen(PORT, () => {

@@ -1,5 +1,6 @@
 const { ReturnCodes } = require('./returnCodes');
 const userDB = require('./db/users.json');
+const bcrypt = require('bcrypt');
 
 const typesList = new Set([
   "Bug",
@@ -219,7 +220,7 @@ RETURNS:
   Error (Object)
 ===============================================================
 */
-const createError = (status, message) => {
+const createError = (status=500, message) => {
   const err = new Error(message);
   err.status = status;
 
@@ -241,8 +242,7 @@ RETURNS:
 const findByUsername = (username, callback) => {
   const user = userDB.find(user => user.username === username);
   let retCode = ReturnCodes.NOT_FOUND;
-  let err = new Error(`User with username:${username} does not exist.`);
-  err.status = 404;
+  let err = createError(404, `User with username:${username} does not exist.`);
 
   if (user) {
     retCode = ReturnCodes.SUCCESS;
@@ -264,27 +264,24 @@ RETURNS:
   Error or User (Object)
 ===============================================================
 */
-const authenticateUser = (username, password, callback) => {
+const authenticateUser = async (username, password, callback) => {
   const user = userDB.find(user => user.username === username);
   let retCode = ReturnCodes.ERROR;
-  let err = new Error('Unknown error...');
-  err.status = 400;
+  let err = createError(400, 'Unknown error...');
 
   if (user) {
-    if (user.password === password) {
+    if (await comparePwd(password, user)) {
       err = null;
       retCode = ReturnCodes.SUCCESS;
-    
     } else {
       err = null;
       retCode = ReturnCodes.INVALID_PASSWORD;
-
     }
   } else {
     err = null
     retCode = ReturnCodes.NOT_FOUND;
-
   }
+  
 
   callback(retCode, user, err);
 }
@@ -295,28 +292,78 @@ FUNCTION:
   createUser(user)
 
 DESCRIPTION:
-  Lorem..
+  Receives user data and if valid, adds to user DB.
 
 RETURNS:
-  Lorem..
+  User/Error (Object)
 ===============================================================
 */
 const createUser = (user) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const exists = userDB.findIndex(entry => entry.username === user.username);
 
     if (exists === -1) {
+      try {
+        user.password = await hashPwd(user.password);
+      } catch (err) {
+        return reject(err);
+      }
+
       userDB.push(user);
       resolve(user);
 
     } else {
-      const err = new Error('Username already exists.');
-      err.status = 400;
+      const err = createError(400, 'Username already exists.');
       reject(err);
 
     }
   });
 };
+
+/*
+===============================================================
+FUNCTION:
+  hashPwd(password, saltRound)
+
+DESCRIPTION:
+  Accepts password and saltRound and returns hashed password.
+
+RETURNS:
+  hashedPassword (String)
+===============================================================
+*/
+const hashPwd = async (password) => {
+  try {
+    const saltRound = Math.floor(Math.random()*10 + 10);
+    const salt = await bcrypt.genSalt(saltRound);
+    const hash = await bcrypt.hash(password, salt);
+
+    return hash;
+  } catch (err) {
+    console.err('An error occurred while hashing password.');
+    
+    return err;
+  }
+}
+
+/*
+===============================================================
+FUNCTION:
+  comparePwd(password, user)
+
+DESCRIPTION:
+  Compares inputted password to password stored in user.
+
+RETURNS:
+  (Boolean)
+===============================================================
+*/
+const comparePwd = async (password, user) => {
+  const matched = await bcrypt.compare(password, user.password);
+  if (matched) return matched;
+
+  return false;
+}
 
 /*
 ===============================================================
@@ -389,7 +436,7 @@ RETURNS:
 ===============================================================
 */
 const isAuthenticated = (req, res, next) => {
-  const nonSecurePaths = ['/login', '/register'];
+  const nonSecurePaths = ['/login', '/register', '/test/login'];
   if (nonSecurePaths.includes(req.path)) {
     if (req.user) return res.redirect('/');
     return next();
