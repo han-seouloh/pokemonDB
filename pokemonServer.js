@@ -24,7 +24,6 @@ const session = require('express-session');
 const store = new session.MemoryStore();
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const bcrypt = require('bcrypt');
 
 app.use(session({
   secret: "p0kemon_Rul3z", // This is not meant to be hardcoded!
