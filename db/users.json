@@ -1,7 +1,6 @@
 [
   {
-    "username": "prof_oak",
-    "password": "$2b$10$W7eKWA4RwltxepO6TIHT/OviFS5GKmk5.Xs0sx3mbruABhGB8j/Ga",
-    "ptxtpass": "Pokedex1*"
+    "user":"test",
+    "password": "testpass"
   }
 ]
