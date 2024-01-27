@@ -3,14 +3,19 @@ const loginRouter = express.Router();
 
 // Imports
 const passport = require('passport');
-const bcrypt = require('bcrypt');
 
 // Utility functions
-const { createUser } = require('./util');
+const { createUser, initializeAdmin } = require('./util');
 
 // Hardcoded database
 const users = require('./db/users.json');
 const info = require ('./db/pokemonAPI-help.json');
+
+// Initialize Admin
+const ADMIN_USER = process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+initializeAdmin(ADMIN_USER, ADMIN_PASSWORD);
+
 
 // Login endpoint
 loginRouter.get('/login', (req, res, next) => {

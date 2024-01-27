@@ -266,6 +266,7 @@ RETURNS:
 */
 const authenticateUser = async (username, password, callback) => {
   const user = userDB.find(user => user.username === username);
+
   let retCode = ReturnCodes.ERROR;
   let err = createError(400, 'Unknown error...');
 
@@ -377,6 +378,28 @@ RETURNS:
   Lorem..
 ===============================================================
 */
+const initializeAdmin = async(username, password) => {
+  try {
+    const response = await createUser({username, password});
+  
+  } catch (err) {
+    console.log(err);
+  
+  };
+}
+
+/*
+===============================================================
+FUNCTION:
+  function(arg)
+
+DESCRIPTION:
+  Lorem..
+
+RETURNS:
+  Lorem..
+===============================================================
+*/
 const functionName = () => {
   return 0;
 }
@@ -438,7 +461,6 @@ RETURNS:
 const isAuthenticated = (req, res, next) => {
   const nonSecurePaths = ['/login', '/register', '/test/login'];
   if (nonSecurePaths.includes(req.path)) {
-    if (req.user) return res.redirect('/');
     return next();
   
   } else {
@@ -476,5 +498,6 @@ module.exports = {
   authenticateUser,
   findByUsername,
   isAuthenticated,
-  createUser
+  createUser,
+  initializeAdmin
 }

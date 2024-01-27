@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 4000;
+require('dotenv').config();
 
 // Hardcoded database
 const info = require ('./db/pokemonAPI-help.json');
