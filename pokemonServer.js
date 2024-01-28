@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
-const PORT = process.env.PORT || 4000;
 require('dotenv').config();
+const PORT = process.env.PORT || 4000;
 
 // Hardcoded database
 const info = require ('./db/pokemonAPI-help.json');
@@ -19,7 +19,7 @@ const morgan = require('morgan');
 app.use(morgan('dev'));
 
 // Utility Imports
-const { isAuthenticated } = require('./util');
+const { isAuthenticated, initializeAdmin, finishServerSetup } = require('./util');
 
 
 // Session Configuration
@@ -66,6 +66,25 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).send({ error: err.status, message: err.message});
 });
 
-app.listen(PORT, () => {
-  console.log(`Server listening on Port:${PORT}`);
-});
+
+// =================== FINAL CONFIGS ===================
+const setupFnArray = [
+  {
+    "fn": initializeAdmin,
+    "params": [process.env.ADMIN_USERNAME, process.env.ADMIN_PASSWORD]
+  }
+];
+
+finishServerSetup(setupFnArray)
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server listening on Port:${PORT}`);
+    });  
+  })
+  .catch((err) => {
+    console.log('Error setting up final configs...');
+    console.log(err);
+  });
+
+
+module.exports = app;

@@ -369,7 +369,29 @@ const comparePwd = async (password, user) => {
 /*
 ===============================================================
 FUNCTION:
-  function(arg)
+  initializeAdmin(arg)
+
+DESCRIPTION:
+  Register admin user during server initialization ..
+
+RETURNS:
+  Void
+===============================================================
+*/
+const initializeAdmin = async(username, password) => {
+  try {
+    await createUser({username, password});
+
+  } catch (err) {
+    console.log(err);
+  
+  };
+}
+
+/*
+===============================================================
+FUNCTION:
+  finishServerSetup(arg)
 
 DESCRIPTION:
   Lorem..
@@ -378,15 +400,12 @@ RETURNS:
   Lorem..
 ===============================================================
 */
-const initializeAdmin = async(username, password) => {
-  try {
-    const response = await createUser({username, password});
-  
-  } catch (err) {
-    console.log(err);
-  
+const finishServerSetup = async( fnArray ) => {
+  for (entry of fnArray) {
+    await entry.fn(...entry.params);
   };
-}
+  console.log('Setup successful...')
+};
 
 /*
 ===============================================================
@@ -499,5 +518,6 @@ module.exports = {
   findByUsername,
   isAuthenticated,
   createUser,
-  initializeAdmin
+  initializeAdmin,
+  finishServerSetup
 }
