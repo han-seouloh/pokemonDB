@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+module.exports = app;
 require('dotenv').config();
 const PORT = process.env.PORT || 4000;
 
@@ -15,8 +16,7 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 
 // Logger
-const morgan = require('morgan');
-app.use(morgan('dev'));
+require('./loggerConfig');
 
 // Utility Imports
 const { isAuthenticated, initializeAdmin, finishServerSetup } = require('./util');
@@ -85,6 +85,3 @@ finishServerSetup(setupFnArray)
     console.log('Error setting up final configs...');
     console.log(err);
   });
-
-
-module.exports = app;
