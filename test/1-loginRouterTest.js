@@ -2,7 +2,7 @@ const { assert } = require('chai');
 const request = require('supertest');
 
 const app = require('../pokemonServer');
-describe('Testing API routes...', () => {
+describe('Testing loginRouter routes...', () => {
   describe('Testing /register route...', () => {
     describe('User is registering...', () => {
       it('Registering prof_birch...', async () => {
@@ -35,5 +35,9 @@ describe('Testing API routes...', () => {
         assert.equal(result, 2);
       });
     });
+  });
+
+  describe('Testing /login route...', () => {
+    
   });
 });
