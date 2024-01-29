@@ -1,7 +1,8 @@
 const { assert } = require('chai');
 const request = require('supertest');
-
 const app = require('../pokemonServer');
+require('dotenv').config();
+
 describe('Testing loginRouter routes...', () => {
   describe('Testing /register route...', () => {
     describe('User is registering...', () => {
@@ -38,6 +39,45 @@ describe('Testing loginRouter routes...', () => {
   });
 
   describe('Testing /login route...', () => {
-    
+    describe('User logging in...', () => {
+      it('Verifying /login returns login instructions...', async() => {
+        const response = await request(app)
+          .get('/login');
+        const data = JSON.parse(response.text);
+
+        assert.include(data.login, 'send POST request to /login');
+        assert.include(data.info, 'If authentication fails');
+      });
+
+      it('Verifying login failure redirects to /login...', async() => {
+        const response = await request(app)
+          .post('/login')
+          .send({
+            username: process.env.ADMIN_USERNAME,
+            password: 'wrongPassword'
+          });
+
+        assert.include(response.text, 'Redirecting to /login');
+      });
+
+      it('Verifying successful login', async () => {
+        const response = await request(app)
+          .post('/login')
+          .send({
+            username: process.env.ADMIN_USERNAME,
+            password: process.env.ADMIN_PASSWORD
+          })
+        console.log(response.text);
+      });
+    });
+  });
+
+  describe('Testing /logout route...', () => {
+    it('User successfully logs out...', async () => {
+      const response = await request(app)
+        .get('/logout');
+
+      assert.include(response.text, 'Redirecting to /');
+    });
   });
 });
