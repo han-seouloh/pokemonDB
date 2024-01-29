@@ -27,7 +27,7 @@ const session = require('express-session');
 const store = new session.MemoryStore();
 
 app.use(session({
-  secret: "p0kemon_Rul3z", // This is not meant to be hardcoded!
+  secret: process.env.SESSION_ENCRYPTION_SECRET,
   cookie: { maxAge: 300000, secure: false },
   saveUninitialized: false,
   resave: false,
