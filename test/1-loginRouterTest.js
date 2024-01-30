@@ -67,7 +67,8 @@ describe('Testing loginRouter routes...', () => {
             username: process.env.ADMIN_USERNAME,
             password: process.env.ADMIN_PASSWORD
           })
-        console.log(response.text);
+        
+          assert.include(response.text, 'Redirecting to /');
       });
     });
   });
