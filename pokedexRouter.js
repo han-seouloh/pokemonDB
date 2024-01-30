@@ -1,7 +1,7 @@
 const express = require('express');
 const pokedexRouter = express.Router();
 
-const { findIndexById, checkQuery, filterByName, filterByType, checkID, createError, validateEntry } = require('./util.js');
+const { findIndexById, checkQuery, filterByName, filterByType, checkID, createError, validateEntry, validType } = require('./util.js');
 const { ReturnCodes } = require('./returnCodes.js');
 
 const data = require('./db/pokemonData.json');
@@ -42,9 +42,17 @@ pokedexRouter.get('/:id', (req, res, next) => {
         return res.send(entriesByName);
 
       case ReturnCodes.Q_TYPE:
-        const mode = Number(req.query.strict || 0);
-        const entriesByType = filterByType(req.query.type, data, mode);
-        return res.send(entriesByType);
+        if (validType(req.query.type) === ReturnCodes.SUCCESS) {
+          const mode = Number(req.query.strict || 0);
+          const entriesByType = filterByType(req.query.type, data, mode);
+          return res.send(entriesByType);
+
+        } else {
+          const err = createError(400, `Invalid Pokemon type: ${req.query.type}`);
+          return next(err);
+
+        }
+        
     }
       
   } else {

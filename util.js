@@ -136,7 +136,7 @@ DESCRIPTION:
   Accepts a type and checks if it's valid.
 
 RETURNS:
-  ReturnCode (Integet)
+  ReturnCode (Integer)
 ===============================================================
 */
 const validType = (type) => {
@@ -509,6 +509,7 @@ module.exports = {
   findIndexById,
   verifyEntry,
   checkQuery,
+  validType,
   filterByName,
   filterByType,
   checkID,

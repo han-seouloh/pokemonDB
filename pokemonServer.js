@@ -64,6 +64,7 @@ app.use('/', loginRouter);
 // =================== ERRORS ===================
 // Error handler
 app.use((err, req, res, next) => {
+  logger.error(err);
   res.status(err.status || 500).send({ error: err.status, message: err.message});
 });
 
