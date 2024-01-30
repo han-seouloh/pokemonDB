@@ -1,12 +1,24 @@
 const { assert } = require('chai');
 const request = require('supertest');
-
 const app = require('../pokemonServer');
+require('dotenv').config();
 
 describe('Server is running...', () => {
   describe('Initializing server setup...', () => {
-    before(function(done) {
-      setTimeout(done, 20000);
+    it('Waiting for server to complete setup...', async () => {
+      let setupIncomplete = process.env.SERVER_SETUP_COMPLETE === 'false';
+      
+      process.stdout.write('    ');
+      
+      while (setupIncomplete) {
+        await delay(2000);
+        
+        setupIncomplete = process.env.SERVER_SETUP_COMPLETE === 'false';
+        if(!setupIncomplete) break;
+
+        process.stdout.write('.');
+      }
+      process.stdout.write('\n');
     });
 
     it('Main page redirects when there is no active session...', async () => {
@@ -35,3 +47,6 @@ describe('Server is running...', () => {
     });
   });
 });
+
+// Utility function
+const delay = ms => new Promise(res => setTimeout(res, ms));
