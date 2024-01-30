@@ -51,6 +51,5 @@ app.use(morgan('log4js', {
 app.use(morgan('dev', { skip: (req, res) => process.env.NODE_ENV === 'test' }));
 
 module.exports = {
-  logger,
-  loggerFile
+  logger
 }
