@@ -1,6 +1,7 @@
 const { ReturnCodes } = require('./returnCodes');
 const userDB = require('./db/users.json');
 const bcrypt = require('bcrypt');
+const {logger, loggerFile} = require('./loggerConfig');
 
 const typesList = new Set([
   "Bug",
@@ -341,7 +342,7 @@ const hashPwd = async (password) => {
 
     return hash;
   } catch (err) {
-    console.err('An error occurred while hashing password.');
+    logger.error('An error occurred while hashing password.');
     
     return err;
   }
@@ -383,7 +384,7 @@ const initializeAdmin = async(username, password) => {
     await createUser({username, password});
 
   } catch (err) {
-    console.log(err);
+    logger.error(err);
   
   };
 }
@@ -404,7 +405,6 @@ const finishServerSetup = async( fnArray ) => {
   for (entry of fnArray) {
     await entry.fn(...entry.params);
   };
-  console.log('Setup successful...')
 };
 
 /*

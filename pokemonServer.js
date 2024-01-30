@@ -17,6 +17,7 @@ app.use(bodyParser.json());
 
 // Logger
 require('./loggerConfig');
+const { logger } = require('./loggerConfig');
 
 // Utility Imports
 const { isAuthenticated, initializeAdmin, finishServerSetup } = require('./util');
@@ -77,11 +78,13 @@ const setupFnArray = [
 
 finishServerSetup(setupFnArray)
   .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server listening on Port:${PORT}`);
-    });  
+    process.env.SERVER_SETUP_COMPLETE = 'true';  
   })
   .catch((err) => {
-    console.log('Error setting up final configs...');
-    console.log(err);
+    logger.error('Error setting up final configs...');
+    logger.error(err);
   });
+
+app.listen(PORT, () => {
+  logger.log(`Server listening on Port:${PORT}`);
+});  
