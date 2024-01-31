@@ -15,10 +15,10 @@ pokedexRouter.param('id', (req, res, next, id) => {
   const index = findIndexById(Number(id), data);
   if (index !== -1) {
     req.index = index;
-    next();
+    return next();
 
   } else {
-    const err = createError(204, 'Pokemon Entry Not Found');
+    const err = createError(404, 'Pokemon Entry Not Found');
     return next(err);
     
   }
@@ -83,7 +83,7 @@ pokedexRouter.put('/', validateEntry, (req, res, next) => {
     case ReturnCodes.VALID_ID:
       const index = findIndexById(Number(entry.id), data);
       if (index === -1) {
-        const err = createError(204, `Could not find entry to update with ID:${entry.id}`);
+        const err = createError(404, `Could not find entry to update with ID:${entry.id}`);
         return next(err);
 
       } else {
