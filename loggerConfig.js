@@ -7,18 +7,13 @@ const app = require('./pokemonServer');
 
 
 // Define the log directory and file
+const today = new Date();
 const logDir = path.join(__dirname, './logs');
-const logFile = path.join(logDir, 'server-output.log');
+const logFile = path.join(logDir, `server-output-${today.getFullYear()}${today.getMonth() + 1}${today.getDate()}.log`);
 
 // Create the log directory if it doesn't exist
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
-}
-
-// Rename the existing log file if it exists
-if (fs.existsSync(logFile)) {
-  const timestamp = new Date();
-  fs.renameSync(logFile, path.join(logDir, `server-output-${timestamp.getFullYear()}${timestamp.getMonth() + 1}${timestamp.getDate()}.log`));
 }
 
 // Configure logger
@@ -27,7 +22,7 @@ log4js.configure({
     SUCCESS: {value: 2001, colour: 'green'}
   },
   appenders: {
-    fileAppender: { type: 'file', filename: './logs/server-output.log' },
+    fileAppender: { type: 'file', filename: logFile },
     console: { type:'console' }
   },
   categories: {
@@ -51,5 +46,6 @@ app.use(morgan('log4js', {
 app.use(morgan('dev', { skip: (req, res) => process.env.NODE_ENV === 'test' }));
 
 module.exports = {
-  logger
+  logger,
+  loggerFile
 }

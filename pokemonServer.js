@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 
 // Logger
 require('./loggerConfig');
-const { logger } = require('./loggerConfig');
+const { logger, loggerFile } = require('./loggerConfig');
 
 // Utility Imports
 const { isAuthenticated, initializeAdmin, finishServerSetup } = require('./util');
@@ -64,7 +64,11 @@ app.use('/', loginRouter);
 // =================== ERRORS ===================
 // Error handler
 app.use((err, req, res, next) => {
-  if (process.env.NODE_ENV !== 'test') logger.error(err);
+  if (process.env.NODE_ENV !== 'test') {
+    logger.error(err);
+  } else {
+    loggerFile.error(err);
+  };
   res.status(err.status || 500).send({error: err.message, status: err.status});
 });
 
