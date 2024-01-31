@@ -78,7 +78,7 @@ describe('Testing loginRouter routes...', () => {
       const response = await request(app)
         .get('/logout');
 
-      assert.include(response.text, 'Redirecting to /');
+      assert.include(response.text, 'Redirecting to /login');
     });
   });
 });
