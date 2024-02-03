@@ -92,7 +92,7 @@ pokedexRouter.put('/', validateEntry, (req, res, next) => {
       }
 
     case ReturnCodes.ORIGINAL_ID:
-      const err = createError(304, 'You cannot modify any of the original 151 pokemon entries.');
+      const err = createError(403, 'You cannot modify any of the original 151 pokemon entries.');
       return next(err);
   }
 });
