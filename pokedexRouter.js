@@ -1,7 +1,7 @@
 const express = require('express');
 const pokedexRouter = express.Router();
 
-const { findIndexById, checkQuery, filterByName, filterByType, checkID, createError, validateEntry, validType } = require('./util.js');
+const { findIndexById, checkQuery, filterByName, filterByType, checkOriginalID, createError, validateEntry, validType, isDuplicateEntry } = require('./util.js');
 const { ReturnCodes } = require('./returnCodes.js');
 
 const data = require('./db/pokemonData.json');
@@ -63,14 +63,14 @@ pokedexRouter.get('/:id', (req, res, next) => {
 // ==================== POST ====================
 pokedexRouter.post('/', validateEntry, (req, res, next) => {
   const entry = req.body.entry;
-  const index = findIndexById(Number(entry.id), data);
 
-  if (index === -1) {
-    data.push(entry);
-    return res.status(200).send(entry);
-  } else {
-    const err = createError(400, 'This entry id already exists.');
+  if (isDuplicateEntry(entry, data)) {
+    const err = createError(400, 'This is a duplicate entry.');
     return next(err);
+    
+  } else {
+    data.push(entry);
+    return res.status(200).send({status: 'SUCCESS', newEntry: entry });
 
   }
 });
@@ -79,7 +79,7 @@ pokedexRouter.post('/', validateEntry, (req, res, next) => {
 pokedexRouter.put('/', validateEntry, (req, res, next) => {
   const entry = req.body.entry;
 
-  switch (checkID(entry.id)) {
+  switch (checkOriginalID(entry.id)) {
     case ReturnCodes.VALID_ID:
       const index = findIndexById(Number(entry.id), data);
       if (index === -1) {
@@ -91,7 +91,7 @@ pokedexRouter.put('/', validateEntry, (req, res, next) => {
         return res.status(200).send({status: 'SUCCESS', updatedEntry: entry});
       }
 
-    case ReturnCodes.INVALID_ID:
+    case ReturnCodes.ORIGINAL_ID:
       const err = createError(304, 'You cannot modify any of the original 151 pokemon entries.');
       return next(err);
   }
