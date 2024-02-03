@@ -1,7 +1,7 @@
 const { ReturnCodes } = require('./returnCodes');
 const userDB = require('./db/users.json');
 const bcrypt = require('bcrypt');
-const {logger, loggerFile} = require('./loggerConfig');
+const {logger} = require('./loggerConfig');
 
 const typesList = new Set([
   "Bug",
@@ -21,7 +21,8 @@ const typesList = new Set([
   "Psychic",
   "Rock",
   "Steel",
-  "Water"
+  "Water",
+  "Test"
 ]);
 
 /*
@@ -55,31 +56,102 @@ RETURNS:
 ===============================================================
 */
 const verifyEntry = (entry) => {
-  if (entry.id > 0 && entry.name && entry.type && entry.description) {
-    if (typeof entry.id === 'number'){
-      if (typeof entry.name === 'string'){
-        if (typeof entry.description === 'string'){
-          if (entry.type instanceof Array) {
-            for (let type of entry.type) {
-              if (typeof type !== 'string') {
-                return ReturnCodes.NOT_A_STRING;
-              }
-            }
-            return ReturnCodes.SUCCESS;
-          } else {
-            return ReturnCodes.NOT_AN_ARRAY;
-          }
-        } else {
-          return ReturnCodes.NOT_A_STRING;
-        }
-      } else {
-        return ReturnCodes.NOT_A_STRING;
-      }
-    } else {
-      return ReturnCodes.NOT_A_NUMBER;
-    }
+  const ReturnCodesArray = [];
+
+  if (entry.id && entry.name && entry.type && entry.description) {
+    ReturnCodesArray.push(ReturnCodes.SUCCESS);
+  } else {
+    ReturnCodesArray.push(ReturnCodes.ERROR);
   };
-  return ReturnCodes.ERROR;
+  ReturnCodesArray.push(idCheck(entry));
+  ReturnCodesArray.push(nameCheck(entry));
+  ReturnCodesArray.push(descriptionCheck(entry));
+  ReturnCodesArray.push(typeArrayCheck(entry));
+
+  for (const retCode of ReturnCodesArray) {
+    if (retCode !== ReturnCodes.SUCCESS) return retCode;
+  }
+
+  return ReturnCodes.SUCCESS;
+}
+
+/*
+===============================================================
+FUNCTION:
+  idCheck(entry object)
+
+DESCRIPTION:
+  Checks for id validity
+
+RETURNS:
+  ReturnCodes (Integer)
+===============================================================
+*/
+const idCheck = (entry) => {
+  if (typeof entry.id === 'number') {
+    if (entry.id <= 0) return ReturnCodes.INVALID_ID;
+    
+    return ReturnCodes.SUCCESS;
+  };
+  return ReturnCodes.NOT_A_NUMBER;
+}
+
+/*
+===============================================================
+FUNCTION:
+  nameCheck(entry object)
+
+DESCRIPTION:
+  Checks for name validity
+
+RETURNS:
+  ReturnCodes (Integer)
+===============================================================
+*/
+const nameCheck = (entry) => {
+  if (typeof entry.name === 'string') return ReturnCodes.SUCCESS;
+  return ReturnCodes.NOT_A_STRING;
+}
+
+/*
+===============================================================
+FUNCTION:
+  descriptionCheck(entry object)
+
+DESCRIPTION:
+  Checks for description's validity
+
+RETURNS:
+  ReturnCodes (Integer)
+===============================================================
+*/
+const descriptionCheck = (entry) => {
+  if (typeof entry.description === 'string') return ReturnCodes.SUCCESS;
+  return ReturnCodes.NOT_A_STRING;
+}
+
+/*
+===============================================================
+FUNCTION:
+  typeArrayCheck(entry object)
+
+DESCRIPTION:
+  Checks new entry's type array for validity.
+
+RETURNS:
+  ReturnCode (Integer)
+===============================================================
+*/
+const typeArrayCheck = (entry) => {
+  if (entry.type instanceof Array) {
+    for (const type of entry.type) {
+      if (typeof type !== 'string') return ReturnCodes.NOT_A_STRING;
+      if(validType(type) === ReturnCodes.INVALID_POKEMON_TYPE) return ReturnCodes.INVALID_POKEMON_TYPE;
+    }
+    return ReturnCodes.SUCCESS;
+
+  }
+  return ReturnCodes.NOT_AN_ARRAY;
 }
 
 /*
@@ -143,7 +215,7 @@ const validType = (type) => {
   if (typesList.has(capitalize(type))) {
     return ReturnCodes.SUCCESS;
   }
-  return ReturnCodes.ERROR;
+  return ReturnCodes.INVALID_POKEMON_TYPE;
 }
 
 /*
@@ -191,7 +263,7 @@ const capitalize = (str) => {
 /*
 ===============================================================
 FUNCTION:
-  checkID(id)
+  checkOriginalID(id)
 
 DESCRIPTION:
   Receives an id and verifies it's not part of the original 151 entries.
@@ -200,9 +272,9 @@ RETURNS:
   ReturnCode (Integer)
 ===============================================================
 */
-const checkID = (id) => {
+const checkOriginalID = (id) => {
   if (id < 152) {
-    return ReturnCodes.INVALID_ID;
+    return ReturnCodes.ORIGINAL_ID;
   } else {
     return ReturnCodes.VALID_ID;
   }
@@ -370,7 +442,7 @@ const comparePwd = async (password, user) => {
 /*
 ===============================================================
 FUNCTION:
-  initializeAdmin(arg)
+  initializeAdmin(username, password)
 
 DESCRIPTION:
   Register admin user during server initialization ..
@@ -392,20 +464,60 @@ const initializeAdmin = async(username, password) => {
 /*
 ===============================================================
 FUNCTION:
-  finishServerSetup(arg)
+  runAsyncFunctions(fnArray {fn, params})
 
 DESCRIPTION:
-  Lorem..
+  Receives an array with objects containing an async function and 
+  its parameters and runs them.
 
 RETURNS:
-  Lorem..
+  Void
 ===============================================================
 */
-const finishServerSetup = async( fnArray ) => {
-  for (entry of fnArray) {
+const runAsyncFunctions = async( fnArray ) => {
+  for (const entry of fnArray) {
     await entry.fn(...entry.params);
   };
 };
+
+/*
+===============================================================
+FUNCTION:
+  runSyncFunctions(fnArray {fn, params})
+
+DESCRIPTION:
+  Receives an array with objects containing a sync function and 
+  its parameters and runs them.
+
+RETURNS:
+  Void
+===============================================================
+*/
+const runSyncFunctions = ( fnArray ) => {
+  for (const entry of fnArray) {
+    entry.fn(...entry.params);
+  };
+};
+
+/*
+===============================================================
+FUNCTION:
+  isDuplicateEntry(entry object, data)
+
+DESCRIPTION:
+  Receives an entry and checks if it's a duplicate entry
+
+RETURNS:
+  (Boolean)
+===============================================================
+*/
+const isDuplicateEntry = (entry, data) => {
+  const filteredEntries = data.filter(pokemon => pokemon.id === entry.id || pokemon.name === entry.name);
+
+  if (filteredEntries.length > 0) return true;
+
+  return false;
+}
 
 /*
 ===============================================================
@@ -448,7 +560,7 @@ const validateEntry = (req, res, next) => {
       return next();
 
     case ReturnCodes.ERROR:
-      err = createError(400, 'Missing entry properties or invalid id.');
+      err = createError(400, 'Missing entry properties.');
       return next(err);
 
     case ReturnCodes.NOT_A_NUMBER:
@@ -461,6 +573,14 @@ const validateEntry = (req, res, next) => {
 
     case ReturnCodes.NOT_AN_ARRAY:
       err = createError(400, 'type property is not an array.');
+      return next(err);
+    
+    case ReturnCodes.INVALID_ID:
+      err = createError(400, 'Invalid id.');
+      return next(err);
+    
+    case ReturnCodes.INVALID_POKEMON_TYPE:
+      err = createError(400, 'Invalid Pokemon type.');
       return next(err);
   }
 };
@@ -507,12 +627,11 @@ const middlewareFunctionName = () => {
 
 module.exports = {
   findIndexById,
-  verifyEntry,
   checkQuery,
   validType,
   filterByName,
   filterByType,
-  checkID,
+  checkOriginalID,
   createError,
   validateEntry,
   authenticateUser,
@@ -520,5 +639,7 @@ module.exports = {
   isAuthenticated,
   createUser,
   initializeAdmin,
-  finishServerSetup
+  runAsyncFunctions,
+  runSyncFunctions,
+  isDuplicateEntry
 }
