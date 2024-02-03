@@ -10,6 +10,7 @@ const app = require('./pokemonServer');
 const today = new Date();
 const logDir = path.join(__dirname, './logs');
 const logFile = path.join(logDir, `server-output-${today.getFullYear()}${today.getMonth() + 1}${today.getDate()}.log`);
+const testLogFile = path.join(logDir, `test-output-${today.getFullYear()}${today.getMonth() + 1}${today.getDate()}.log`);
 
 // Create the log directory if it doesn't exist
 if (!fs.existsSync(logDir)) {
@@ -23,23 +24,24 @@ log4js.configure({
   },
   appenders: {
     fileAppender: { type: 'file', filename: logFile },
+    testAppender: { type: 'file', filename: testLogFile },
     console: { type:'console' }
   },
   categories: {
-    default: { appenders: ['fileAppender', 'console'], level: 'all' },
-    file: { appenders: ['fileAppender'], level: 'all' }
+    default: { appenders: ['fileAppender', 'testAppender', 'console'], level: 'all' },
+    test: { appenders: ['testAppender'], level: 'all' }
   }
 });
 
 const logger = log4js.getLogger();
-const loggerFile = log4js.getLogger('file');
+const testLogger = log4js.getLogger('test');
 
 // Configure morgan and redirect write stream to log4js
 morgan.format('log4js', ':method :url :status :response-time ms - :res[content-length]');
 
 app.use(morgan('log4js', {
   "stream": {
-    write: function(str) { loggerFile.info(str); }
+    write: function(str) { testLogger.info(str); }
   },
   skip: (req, res) => process.env.NODE_ENV === 'dev'
 }));
@@ -47,5 +49,5 @@ app.use(morgan('dev', { skip: (req, res) => process.env.NODE_ENV === 'test' }));
 
 module.exports = {
   logger,
-  loggerFile
+  testLogger
 }
