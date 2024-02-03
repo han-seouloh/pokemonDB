@@ -48,7 +48,7 @@ describe('Testing pokemonServer and pokemonRouter routes...', () => {
   });
 
   describe('Testing /pokedex route...', () => {
-    describe('Testing GET routes', () => {
+    describe('Testing GET route...', () => {
       it('GET /pokedex/all returns 152 entries...', (done) => {
         agent
         .get('/pokedex/all')
@@ -156,6 +156,232 @@ describe('Testing pokemonServer and pokemonRouter routes...', () => {
             throw new Error('Expected "Not Found" error, but got another response');
           }
         });
+      });
+    });
+
+    describe('Testing entry validation middlware...', () => {
+      it('Sending entry with missing properties returns error...', (done) => {
+        let testEntry = {
+          description: 'This entry has missing properties'
+        };
+        agent
+          .post('/pokedex')
+          .send({entry: testEntry})
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'Missing entry properties');
+            done();
+          });
+      });
+
+      it('Sending entry with string id returns error...', (done) => {
+        let testEntry = {
+          id: '1',
+          name: 'testEntry',
+          type: ['Test'],
+          description: 'Test'
+        };
+        agent
+          .post('/pokedex')
+          .send({entry: testEntry})
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'id property is not a number');
+            done();
+          });
+      });
+
+      it('Sending entry with integer type array returns error...', (done) => {
+        let testEntry = {
+          id: 1,
+          name: 'testEntry',
+          type: [7357],
+          description: 'Test'
+        };
+        agent
+          .post('/pokedex')
+          .send({entry: testEntry})
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'elements are not strings');
+            done();
+          });
+      });
+
+      it('Sending entry with nonArray type returns error...', (done) => {
+        let testEntry = {
+          id: 1,
+          name: 'testEntry',
+          type: 'Test',
+          description: 'Test'
+        };
+        agent
+          .post('/pokedex')
+          .send({entry: testEntry})
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'type property is not an array.');
+            done();
+          });
+      });
+
+      it('Sending entry with invalid type returns error...', (done) => {
+        let testEntry = {
+          id: 1,
+          name: 'testEntry',
+          type: ['invalidType'],
+          description: 'Test'
+        };
+        agent
+          .post('/pokedex')
+          .send({entry: testEntry})
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'Invalid Pokemon type');
+            done();
+          });
+      });
+    });
+
+    describe('Testing POST route...', () => {
+      it('POST /pokedex with duplicate id entry returns error...', (done) => {
+        const duplicateEntry = {
+          id: 10,
+          name: 'testEntry',
+          type: ['Test'],
+          description: 'Test'
+        };
+        agent
+          .post('/pokedex')
+          .send({entry: duplicateEntry})
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'This is a duplicate entry');
+            done();
+          });
+      });
+
+      it('POST /pokedex with duplicate name entry returns error...', (done) => {
+        const duplicateEntry = {
+          id: 200,
+          name: 'Arcanine',
+          type: ['Test'],
+          description: 'Test'
+        };
+        agent
+          .post('/pokedex')
+          .send({entry: duplicateEntry})
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'This is a duplicate entry');
+            done();
+          });
+      });
+
+      it('POST /pokedex with valid entry returns successful...', (done) => {
+        const testEntry = {
+          id: 153,
+          name: 'testEntry',
+          type: ['Test'],
+          description: 'Test'
+        };
+        agent
+          .post('/pokedex')
+          .send({entry: testEntry})
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'newEntry');
+            done();
+          });
+      });
+
+      it('Verifying valid entry was added to data...', (done) => {
+        agent
+          .get('/pokedex/all?name=testEntry')
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'testEntry');
+            done();
+          });
+      });
+    });
+
+    describe('Testing PUT route...', () => {
+      it('PUT /pokedex to modify an original entry returns an error...', (done) => {
+        const testEntry = {
+          id: 59,
+          name: 'renamedEntry',
+          type: ['Test'],
+          description: 'Test'
+        };
+        agent
+          .put('/pokedex')
+          .send({entry: testEntry})
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'cannot modify any of the original 151');
+            done();
+          });
+      });
+
+      it('PUT /pokedex to modify a valid entry is successful...', (done) => {
+        const testEntry = {
+          id: 153,
+          name: 'renamedEntry',
+          type: ['Test'],
+          description: 'Test'
+        };
+        agent
+          .put('/pokedex')
+          .send({entry: testEntry})
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'updatedEntry');
+            done();
+          });
+      });
+
+      it('Verifying valid entry was added to data...', (done) => {
+        agent
+          .get('/pokedex/all')
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'renamedEntry');
+            assert.notInclude(res.text, 'testEntry');
+            done();
+          });
+      });
+    });
+
+    describe('Testing DELETE route...', () => {
+      it('DELETE /pokedex/6 to delete an original entry returns an error...', (done) => {
+        agent
+          .delete('/pokedex/6')
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'cannot delete any of the original 151');
+            done();
+          });
+      });
+
+      it('DELETE /pokedex/all returns an error...', (done) => {
+        agent
+          .delete('/pokedex/all')
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'Bad Request. Specify ID.');
+            done();
+          });
+      });
+
+      it('DELETE /pokedex/153 to delete an added entry is successful...', (done) => {
+        agent
+          .delete('/pokedex/153')
+          .end((err, res) => {
+            if (err) throw err;
+            assert.include(res.text, 'deletedEntry');
+            done();
+          });
       });
     });
   });
