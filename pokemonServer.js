@@ -17,10 +17,10 @@ app.use(bodyParser.json());
 
 // Logger
 require('./loggerConfig');
-const { logger, loggerFile } = require('./loggerConfig');
+const { logger, testLogger } = require('./loggerConfig');
 
 // Utility Imports
-const { isAuthenticated, initializeAdmin, finishServerSetup } = require('./util');
+const { isAuthenticated, initializeAdmin, finishServerSetup, runAsyncFunctions } = require('./util');
 
 
 // Session Configuration
@@ -67,7 +67,7 @@ app.use((err, req, res, next) => {
   if (process.env.NODE_ENV !== 'test') {
     logger.error(err);
   } else {
-    loggerFile.error(err);
+    testLogger.error(err);
   };
   res.status(err.status || 500).send({error: err.message, status: err.status});
 });
@@ -81,9 +81,9 @@ const setupFnArray = [
   }
 ];
 
-finishServerSetup(setupFnArray)
+runAsyncFunctions(setupFnArray)
   .then(() => {
-    process.env.SERVER_SETUP_COMPLETE = 'true';  
+    process.env.SERVER_SETUP_COMPLETE = 'true';
   })
   .catch((err) => {
     logger.error('Error setting up final configs...');
